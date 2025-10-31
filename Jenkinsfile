@@ -46,26 +46,24 @@ pipeline {
 
         stage('Deploy to EC2') {
             steps {
-                script {
-                    sshagent([SSH_KEY]) {
-                        sh '''
-                        ssh -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} '
-                          echo "Stopping old container if exists..." &&
-                          docker stop phpapp || true 
-                          docker rm phpapp || true 
-                          echo "Pulling latest image..." 
-                          docker pull ${DOCKER_IMAGE}:latest 
-                          echo "Running new container..." 
-                          docker run -d --name phpapp -p 80:80 \
-                            -e DB_HOST=${DB_HOST} \
-                            -e DB_NAME=${DB_NAME} \
-                            -e DB_USER=${DB_USER} \
-                            -e DB_PASS=${DB_PASS} \
-                            ${DOCKER_IMAGE}:latest
-                        '
-                        '''
-                    }
-                }
+                sshagent([SSH_KEY]) {
+            script {
+                def image = "${DOCKER_IMAGE}:latest"
+                sh """
+                ssh -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} '
+                    echo "Stopping old container if exists..."
+                    docker stop phpapp || true
+                    docker rm phpapp || true
+
+                    echo "Pulling latest image..."
+                    docker pull ${image}
+
+                    echo "Running new container..."
+                    docker run -d --name phpapp -p 80:80 ${image}
+                '
+                """
+            }
+        }
             }
         }
     }
