@@ -107,18 +107,18 @@ exit;
 ---
 
 ## 🔧 Step 5: Jenkins Pipeline Configuration
-### 🔐 Add Jenkins Credentials
+### 🔐 Add Jenkins Credentials:
 (a) DockerHub credentials
-   Go to Manage Jenkins → Credentials → Global → Add Credentials
-   Choose Username with password
-   ID → dockerhub-creds
-   Enter your DockerHub username and password.
+  1.  Go to Manage Jenkins → Credentials → Global → Add Credentials
+  2.  Choose Username with password
+  3.  ID → dockerhub-creds
+  4.  Enter your DockerHub username and password.
 (b) SSH Key for EC2
-   If you already have a .pem key from AWS → upload it to Jenkins:
-      Type: SSH Username with private key
-      ID: ec2-ssh-key
-      Username: ubuntu
-      Private Key: paste contents of your .pem file.
+  1.  If you already have a .pem key from AWS → upload it to Jenkins:
+      1. Type: SSH Username with private key
+      2.  ID: ec2-ssh-key
+      3.  Username: ubuntu
+      4.  Private Key: paste contents of your .pem file.
       
 ### In Jenkins Dashboard:
 1. Click **New Item** → **Pipeline**
