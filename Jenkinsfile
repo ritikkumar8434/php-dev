@@ -51,11 +51,11 @@ pipeline {
                         sh '''
                         ssh -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} '
                           echo "Stopping old container if exists..." &&
-                          docker stop phpapp || true &&
-                          docker rm phpapp || true &&
-                          echo "Pulling latest image..." &&
-                          docker pull ${DOCKER_IMAGE}:latest &&
-                          echo "Running new container..." &&
+                          docker stop phpapp || true 
+                          docker rm phpapp || true 
+                          echo "Pulling latest image..." 
+                          docker pull ${DOCKER_IMAGE}:latest 
+                          echo "Running new container..." 
                           docker run -d --name phpapp -p 80:80 \
                             -e DB_HOST=${DB_HOST} \
                             -e DB_NAME=${DB_NAME} \
