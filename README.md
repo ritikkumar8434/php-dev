@@ -72,63 +72,37 @@ docker --version
 Create a test database:
 ```bash
 mysql -h <RDS_ENDPOINT> -u <USERNAME> -p
-CREATE DATABASE php_app;
+#Enter your database password
+CREATE DATABASE phpapp;
+USE phpapp;
+
+CREATE TABLE users (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
 exit;
 ```
-
 ---
 
 ## 🧩 Step 4: PHP Application Setup
 
 **Project Structure:**
 ```
-php-app/
-├── index.php
-├── db.php
 ├── Dockerfile
-└── .env
+├── Jenkinsfile
+├── README.md
+├── app
+    ├── db.php
+    └── index.php
+└── schema.sql
 ```
 
-**index.php**
-```php
-<?php
-include('db.php');
-echo "<h2>Connected to RDS Successfully!</h2>";
-?>
-```
 
-**db.php**
-```php
-<?php
-$host = getenv('DB_HOST');
-$user = getenv('DB_USER');
-$pass = getenv('DB_PASS');
-$db = getenv('DB_NAME');
 
-$conn = new mysqli($host, $user, $pass, $db);
 
-if ($conn->connect_error) {
-  die("Connection failed: " . $conn->connect_error);
-}
-?>
-```
 
-**.env**
-```
-DB_HOST=<RDS_ENDPOINT>
-DB_USER=<RDS_USERNAME>
-DB_PASS=<RDS_PASSWORD>
-DB_NAME=php_app
-```
-
-**Dockerfile**
-```dockerfile
-FROM php:8.0-apache
-COPY . /var/www/html/
-RUN docker-php-ext-install mysqli && docker-php-ext-enable mysqli
-EXPOSE 80
-CMD ["apache2-foreground"]
-```
 
 ---
 
@@ -139,60 +113,7 @@ CMD ["apache2-foreground"]
 2. Add GitHub Repo URL
 3. In **Pipeline Script**, add:
 
-```groovy
-pipeline {
-    agent any
-
-    environment {
-        DOCKERHUB_USER = credentials('dockerhub-user')
-        DOCKERHUB_PASS = credentials('dockerhub-pass')
-        EC2_USER = 'ubuntu'
-        EC2_HOST = '<EC2_PUBLIC_IP>'
-        PEM_KEY = credentials('ec2-pem-key')
-    }
-
-    stages {
-        stage('Clone Repo') {
-            steps {
-                git 'https://github.com/<your-repo>/php-app.git'
-            }
-        }
-
-        stage('Build Docker Image') {
-            steps {
-                sh 'docker build -t php-app .'
-            }
-        }
-
-        stage('Login to DockerHub') {
-            steps {
-                sh 'echo $DOCKERHUB_PASS | docker login -u $DOCKERHUB_USER --password-stdin'
-            }
-        }
-
-        stage('Push to DockerHub') {
-            steps {
-                sh 'docker tag php-app $DOCKERHUB_USER/php-app:latest'
-                sh 'docker push $DOCKERHUB_USER/php-app:latest'
-            }
-        }
-
-        stage('Deploy to EC2') {
-            steps {
-                sh '''
-                ssh -o StrictHostKeyChecking=no -i $PEM_KEY ${EC2_USER}@${EC2_HOST} <<EOF
-                sudo docker pull $DOCKERHUB_USER/php-app:latest
-                sudo docker stop php-app || true
-                sudo docker rm php-app || true
-                sudo docker run -d -p 80:80                     -e DB_HOST=<RDS_ENDPOINT>                     -e DB_USER=<USERNAME>                     -e DB_PASS=<PASSWORD>                     -e DB_NAME=php_app                     --name php-app $DOCKERHUB_USER/php-app:latest
-                EOF
-                '''
-            }
-        }
-    }
-}
-```
-
+**Jenkinsfile**
 ---
 
 ## ✅ Step 6: Test Deployment
